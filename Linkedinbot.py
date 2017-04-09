@@ -2,7 +2,6 @@ import os
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import lxml.html
-import csv
 import time
 import sqlite3
 
@@ -40,57 +39,19 @@ def scroll (num):
     url = 'https://www.linkedin.com/jobs/search/?keywords=python&location=United%20States&locationId=us%3A0&start=' + str(num)
     browser.get (url)
 
-PythonJobs = []
-def run ():
-    for Pagenumber in range (25,975,25) :
-          scroll (Pagenumber)
-          print "================================================================="
-          time.sleep (15)
-          Easy = getEasyApply ()
-          L    = len (Easy)
-          print 'Length of Easy apply' + len (Easy)
-          for j in range (L):
-              EasyApply= getEasyApply ()
-              time.sleep (10)
-              print EasyApply
-              try:
-                  print "Now working on element no." , j
-                  EasyApply[j].click()
-                  time.sleep (5)
-                  PythonJobs.append([str(browser.current_url),str (browser.find_element_by_tag_name ('h1').text) , Pagenumber,j])
-              except:
-                  continue
-              print ' finished working on element number' + str (j)
-              scroll (Pagenumber)
-
-
-#element.get_attribute("href")
-#[str(element.get_attribute("href")) for element in browser.find_elements_by_partial_link_text ('Easy Apply')]
-#Links#[str(element.get_attribute("href")).split('?') [0]  for element in browser.find_elements_by_partial_link_text ('Easy Apply') ]
-#Texts#[str(element.text) for element in browser.find_elements_by_partial_link_text ('Easy Apply')]
-#[str(element.text) for element in browser.find_elements_by_partial_link_text ('Easy Apply') if str (element.text).startswith ("Job Title")]
-#[element.text for element in browser.find_elements_by_tag_name ('a') if element.text.startswith("Job Title")]
-#[element.text.split("\n") for element in browser.find_elements_by_tag_name ('a') if element.text.startswith("Job Title") and 'Easy Apply' in element.text.split("\n")]
-
-
-#[element.text.split("\n") for element in browser.find_elements_by_tag_name ('a') if element.text.startswith("Job Title") and 'Easy Apply' in element.text.split("\n")]
 #
-
-
-#x =[element.text.split("\n") for element in browser.find_elements_by_tag_name ('a') if element.text.startswith("Job Title") and 'Easy Apply' in element.text.split("\n")]
-#y = [str(element.get_attribute("href")).split('?') [0] for element in browser.find_elements_by_tag_name ('a') if element.text.startswith("Job Title") and 'Easy Apply' in element.text.split("\n")]
-#
-
-
-
 #a: unicode text    b:link
 def mylist (a,b):
     mylist = []
     #jobtitles = []
     for i in range(len(b)):
         jobtitle = a[i] [1]
+        company  = a[i] [3]
+        location = a[i] [5]
+        description = a[i] [6]
+        time     = a[i] [-2]
         joblink  = b[i]
-        mylist.append ([joblink ,jobtitle])
+        mylist.append ([joblink ,jobtitle,company,location,description,time])
     return mylist
 
 PythonJobs = []
@@ -116,24 +77,23 @@ def Go ():
           #print mylist(a,b)
           print "==============" + str(len(b)) +"=============================="
           time.sleep (5)
-#https://www.linkedin.com/jobs/view/263609380/
-#https://www.linkedin.com/jobs/view/279050467/
 
-# sql lite cursor , file handle
-#cur points at the database
-#Establish connection
 #input [joblink , job title]
 def store ():
     conn = sqlite3.connect ("linkedin.sqlite")
     cur  = conn.cursor()
     cur.executescript ('''  DROP TABLE IF EXISTS linkedin ''')
-    cur.execute ('''  CREATE TABLE IF NOT EXISTS linkedin (Joblink VARCHAR , Jobtitle VARCHAR) ''')
+    cur.execute ('''  CREATE TABLE IF NOT EXISTS linkedin (Joblink VARCHAR , Jobtitle VARCHAR , Company VARCHAR ,Location VARCHAR , Description VARCHAR , Time VARCHAR ) ''')
     #PythonJobs = ['https://www.linkedin.com/jobs/view/289092819/',
     #  'Senior Python Developer, Enterprise Products & Services']
     for joblist in PythonJobs:
+         jobtimepost= joblist[5]
+         jobdescript= joblist[4]
+         joblocation= joblist[3]
+         jobcompany = joblist[2]
          myjobtitle = joblist[1]
          myjoblink  = joblist[0]
-         cur.execute (''' INSERT INTO linkedin (Joblink , Jobtitle) VALUES (?,?)''' , (myjoblink,myjobtitle))
+         cur.execute (''' INSERT INTO linkedin (Joblink , Jobtitle,Company,Location,Description,Time) VALUES (?,?,?,?,?,?)''' , (myjoblink,myjobtitle,jobcompany,joblocation,jobdescript,jobtimepost))
     #myjoblink  = 'Emad'
     #myjobtitle = 'Senior Python Developer, Enterprise Products & Services'
     conn.commit()
