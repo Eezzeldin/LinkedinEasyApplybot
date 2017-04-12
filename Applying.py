@@ -15,6 +15,7 @@ from selenium.webdriver.common.keys import Keys
 import lxml.html
 import time
 import sqlite3
+import random
 
 conn = sqlite3.connect ('linkedin.sqlite')
 cur  = conn.cursor()
@@ -86,16 +87,18 @@ def Apply ():
     easyapply ()
     #upload resume
     add_resume()
+    time.sleep (random.randint (1,8))
     #submit
     submitapplication()
+    time.sleep (1)
     #pass
 
 #T1 : Easy App    T2:No Easy App
-
 def run ():
     #scrolling through url list
     #open link in browser
     #put link
+    #156
     for url in myurls:
     #url = 'https://www.linkedin.com/jobs/view/272687969/'
         browser.get (url)
@@ -107,7 +110,9 @@ def run ():
             continue
         #Apply
     #perform easy apply operation if True and move to next link if false ***
-        time.sleep (60)
+        time.sleep (random.randint (2,240))
     #pass
     
-#https://www.linkedin.com/jobs/view/268819011/    
+#https://www.linkedin.com/jobs/view/268819011/ 
+#https://www.linkedin.com/jobs/view/231638747/ 
+#https://www.linkedin.com/jobs/view/305175154/    
