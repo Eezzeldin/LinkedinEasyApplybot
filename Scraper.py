@@ -10,8 +10,8 @@ seperate file that will move along these urls one by one and apply for the job  
 Tunable Parameters
 ==================
 You will need to change 3 things to tune this system toward the kind of job you are targeting.
-#1- Change the key words of your job search query down there in the scroll () function. I have chosen python to be my search keyword, you choose whatever you like. In addition, I chose the whole united states, you may choose whatever you like.
-#2- Everytime you want the scraper to scrape for a different job title and location on linkedin, please remember to change the table name in the sqlite function store () at the very end of the code.
+#1- scroll() :Change the key words of your job search query down there in the scroll () function. I have chosen python to be my search keyword, you choose whatever you like. In addition, I chose the whole united states, you may choose whatever you like.
+#2- store () : Everytime you want the scraper to scrape for a different job title and location on linkedin, please remember to change the table name in the sqlite function store () at the very end of the code.
 #3- The sleeping time between every scrape operation and the other. Keep in mind please that this project was never intended for aggressive scraping, so respect a time difference of at least 2-3 seconds. The sleep time is on the for loop function Go()
 
 Operation scheme
@@ -39,6 +39,7 @@ from selenium.webdriver.common.keys import Keys
 import time
 import sqlite3
 
+
 def openbrowser():
     global browser
     current_directory = os.getcwd()
@@ -65,7 +66,9 @@ def getEasyApply_text():
     return toString ([element.text.split("\n") for element in browser.find_elements_by_tag_name ('a') if element.text.startswith("Job Title") and 'Easy Apply' in element.text.split("\n")])
 
 def scroll (num):
-    url = 'https://www.linkedin.com/jobs/search/?keywords=python&location=United%20States&locationId=us%3A0&start=' + str(num)
+    #https://www.linkedin.com/jobs/search/?f_E=3%2C2&f_SB2=2&keywords=python&location=United%20States&locationId=us%3A0&sortBy=DD
+    #https://www.linkedin.com/jobs/search/?keywords=python&location=United%20States&locationId=us%3A0
+    url = 'https://www.linkedin.com/jobs/search/?f_E=3%2C2&f_SB2=2&keywords=python&location=United%20States&locationId=us%3A0&sortBy=DD'+'&start=' + str(num)
     browser.get (url)
 
 #the mylist function is called inside the Go() function. mylist function is supposed to get a , b arguments and then return a list that has all the job details.
@@ -89,10 +92,10 @@ def Go ():
     global PythonJobs
     counter = 1
 
-    for Pagenumber in range (25,1000,25) :
+    for Pagenumber in range (10,1000,10) :
           #=====number of pages===================
           counter = counter + 1
-          print str (counter)
+          print (str (counter))
 
           #======Unlocking hidden links=============
           #You need to scroll down the whole page here to unveil the hidden easyapply links in the web page. Linkedin seemed to hide em until the user actually scrolls down to see em.
@@ -109,7 +112,7 @@ def Go ():
           scroll (Pagenumber)
 
           #========Monitoring Operation from Console===========================
-          print "==============" + str(len(b)) +"=Easy Apply jobs Parsed========"
+          print ("==============" + str(len(b)) +"=Easy Apply jobs Parsed========")
 
           #========Sleep Time===========================
           time.sleep (5)
@@ -118,10 +121,8 @@ def Go ():
 def store ():
     conn = sqlite3.connect ("linkedin.sqlite")
     cur  = conn.cursor()
-    cur.executescript ('''  DROP TABLE IF EXISTS Data ''')
-    cur.execute ('''  CREATE TABLE IF NOT EXISTS Data (Joblink VARCHAR , Jobtitle VARCHAR , Company VARCHAR ,Location VARCHAR , Description VARCHAR , Time VARCHAR ) ''')
-    #PythonJobs = ['https://www.linkedin.com/jobs/view/289092819/',
-    #  'Senior Python Developer, Enterprise Products & Services']
+    #cur.executescript ('''  DROP TABLE IF EXISTS DataAnalyst ''')
+    cur.execute ('''  CREATE TABLE IF NOT EXISTS Python2 (Joblink VARCHAR , Jobtitle VARCHAR , Company VARCHAR ,Location VARCHAR , Description VARCHAR , Time VARCHAR, DayScrapped VARCHAR ) ''')
     for joblist in PythonJobs:
          jobtimepost= joblist[5]
          jobdescript= joblist[4]
@@ -129,8 +130,7 @@ def store ():
          jobcompany = joblist[2]
          myjobtitle = joblist[1]
          myjoblink  = joblist[0]
-         cur.execute (''' INSERT INTO Data (Joblink , Jobtitle,Company,Location,Description,Time) VALUES (?,?,?,?,?,?)''' , (myjoblink,myjobtitle,jobcompany,joblocation,jobdescript,jobtimepost))
-    #myjoblink  = 'Emad'
-    #myjobtitle = 'Senior Python Developer, Enterprise Products & Services'
+         DayScrapped= time.localtime() [2]
+         cur.execute (''' INSERT INTO Python2 (Joblink , Jobtitle,Company,Location,Description,Time,DayScrapped) VALUES (?,?,?,?,?,?,?)''' , (myjoblink,myjobtitle,jobcompany,joblocation,jobdescript,jobtimepost,DayScrapped))
     conn.commit()
     cur.close()

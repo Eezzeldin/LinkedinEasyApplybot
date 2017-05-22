@@ -35,7 +35,7 @@ import random
 
 conn = sqlite3.connect ('linkedin.sqlite')
 cur  = conn.cursor()
-urls = cur.execute(''' SELECT Joblink FROM linkedin  ''')
+urls = cur.execute('''SELECT DISTINCT * FROM Python3 ''')
 myurls = [str (url[0]) for url in urls]
 cur.close()
 
@@ -48,14 +48,12 @@ def openbrowser():
 
 #detect any button
 def getButton(tag,ButtonName):
-    update_root ()
     ElementsList = browser.find_elements_by_tag_name (tag)
     for x in ElementsList:
             if str(x.text) == ButtonName:
-                print 'Found Button'
+                print ('Found Button')
                 return x
 def checkbutton (tag,ButtonName):
-    update_root ()
     ElementsList = browser.find_elements_by_tag_name (tag)
     TextElements = []
     for x in ElementsList:
@@ -63,32 +61,56 @@ def checkbutton (tag,ButtonName):
     return ButtonName in TextElements
 
 #click easy apply button
-def easyapply ()  :
-    update_root ()
+def easyapply ()  : 
+    print ('Entered Easy Apply')
+    time.sleep (random.randint (2,8))
     easyapply = getButton('span','Easy Apply')
+    time.sleep (random.randint (2,8))
     easyapply.click()
-    update_root ()
+    print ('I clicked the button')
 
 def add_resume():
+    #time.sleep (random.randint (0.5,1))
     browser.find_element_by_id('file-browse-input').send_keys(os.getcwd()+"/Technical Resume.docx")
 
 # submit your application
 def submitapplication():
     submit = getButton('button','Submit application')
     submit.click()
+    
+def unfollow ():
+    followcheckbox = browser.find_element_by_id ('follow-company')
+    followcheckbox.click()   
+    
+def sidesubmit():
+    submit = getButton('button','Submit')
+    submit.click()    
 
 def Apply ():
+    print ('Entered apply')
     easyapply () #pressbutton
+    print ('Pressed Easy Apply')
     add_resume() #upload resume
     time.sleep (random.randint (1,8))
+    unfollow ()
     submitapplication() #submit
     time.sleep (1)
 
 def run ():
-    for url in myurls:
-        browser.get (url)
-        try :
+    jobcounter = 0
+    misscounter = 0 
+    for url in myurls[100:]:
+        try:
+            print ('I am inside try')
+            browser.get (url)
             Apply ()
+            jobcounter = jobcounter + 1
+            time.sleep (random.randint (2,5))
+            print ('Applied:%s' %url , 'JobCounts:%s' %jobcounter )
         except:
+            time.sleep (random.randint (2,5))
+            misscounter = misscounter + 1
+            print ('Not Applied' , 'MissCounts:%s' %misscounter)
+            if checkbutton ('button','Submit'):sidesubmit()
             continue
-        time.sleep (random.randint (2,5))
+        
